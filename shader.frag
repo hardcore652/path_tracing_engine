@@ -5,6 +5,7 @@
 //	  New primitives
 //    Low quality version of engine - use reflectiveness parameter without mixing with diffuse reflection
 //    Fix errors on nVidia GPUs
+//    Optimize the engine
 
 #version 460
 #extension GL_EXT_gpu_shader4: enable
@@ -503,223 +504,223 @@ vec3 objects2[objects2Num][5];
 
 void main() {
 
-		// Spheres
-		// [0] - pos and radius
-		// [1] - color and roughness
-		// [2] - other materials: x - refractiveness, y - alpha, z - nothing, w - nothing
+	// Spheres
+	// [0] - pos and radius
+	// [1] - color and roughness
+	// [2] - other materials: x - refractiveness, y - alpha, z - nothing, w - nothing
 
-		spheres[0][0] = vec4(0.0, 0.0, 0.0, 1.0);
-		spheres[0][1] = vec4(1.0, 0.8, 0.1, 1.0);
+	spheres[0][0] = vec4(0.0, 0.0, 0.0, 1.0);
+	spheres[0][1] = vec4(1.0, 0.8, 0.1, 1.0);
 
-		spheres[1][0] = vec4(4.0, -5.0, -0.51, 1.5);
-		spheres[1][1] = vec4(1.0, 1.0, 1.0, 0.0);
-		spheres[1][2] = vec4(0.5, 0.0, 0.0, 0.0);
+	spheres[1][0] = vec4(4.0, -5.0, -0.51, 1.5);
+	spheres[1][1] = vec4(1.0, 1.0, 1.0, 0.0);
+	spheres[1][2] = vec4(0.5, 0.0, 0.0, 0.0);
 
-		spheres[2][0] = vec4(-8.0, 5.0, -1.0, 2.0);
-		spheres[2][1] = vec4(0.8, 0.8, 1.0, 0.0);
+	spheres[2][0] = vec4(-8.0, 5.0, -1.0, 2.0);
+	spheres[2][1] = vec4(0.8, 0.8, 1.0, 0.0);
 
-		spheres[3][0] = vec4(-4.0, -6.0, 0.0, 1.0);
-		spheres[3][1] = vec4(0.8, 0.8, 1.0, 0.55);
+	spheres[3][0] = vec4(-4.0, -6.0, 0.0, 1.0);
+	spheres[3][1] = vec4(0.8, 0.8, 1.0, 0.55);
 
-		spheres[4][0] = vec4(-5.0, 3.0, -3.3, 0.7);
-		spheres[4][1] = vec4(2.0, 0.004, 0.05, -1.0);
+	spheres[4][0] = vec4(-5.0, 3.0, -3.3, 0.7);
+	spheres[4][1] = vec4(2.0, 0.004, 0.05, -1.0);
 
-		spheres[5][0] = vec4(-5.0, -2.0, 0.1, 0.9);
-		spheres[5][1] = vec4(0.3, 0.3, 0.3, -1.0);
+	spheres[5][0] = vec4(-5.0, -2.0, 0.1, 0.9);
+	spheres[5][1] = vec4(0.3, 0.3, 0.3, -1.0);
 
-		for (int i = 0; i < 5; i++) {
-			spheres[i+6][0] = vec4(10.0 + i * 1.7, 10.0, 0.2, 0.8);
-			spheres[i+6][1] = vec4(0.6, 0.6, 0.6, i / 4.0);
+	for (int i = 0; i < 5; i++) {
+		spheres[i+6][0] = vec4(10.0 + i * 1.7, 10.0, 0.2, 0.8);
+		spheres[i+6][1] = vec4(0.6, 0.6, 0.6, i / 4.0);
 
-		}
-		for (int i = 0; i < 5; i++) {
-			spheres[i+11][0] = vec4(10.0 + i * 1.7, 12.0, 0.2, 0.8);
-			spheres[i+11][1] = vec4(0.6, 0.6, 0.6, -2.0 - i / 4.0);
+	}
+	for (int i = 0; i < 5; i++) {
+		spheres[i+11][0] = vec4(10.0 + i * 1.7, 12.0, 0.2, 0.8);
+		spheres[i+11][1] = vec4(0.6, 0.6, 0.6, -2.0 - i / 4.0);
 
-		}
+	}
 
-		spheres[16][0] = vec4(8.0, -3.0, -3.61, 0.4);
-		spheres[16][1] = vec4(0.003, 0.009, 0.5, -1.0);
-		spheres[16][1].b *= 50.0;
+	spheres[16][0] = vec4(8.0, -3.0, -3.61, 0.4);
+	spheres[16][1] = vec4(0.003, 0.009, 0.5, -1.0);
+	spheres[16][1].b *= 50.0;
 
-		spheres[17][0] = vec4(-7.0, -6.0, 0.2, 0.8);
-		spheres[17][1] = vec4(0.6, 0.6, 1.0, 0.2);
-		spheres[17][2] = vec4(0.5, 0.0, 0.0, 0.0);
+	spheres[17][0] = vec4(-7.0, -6.0, 0.2, 0.8);
+	spheres[17][1] = vec4(0.6, 0.6, 1.0, 0.2);
+	spheres[17][2] = vec4(0.5, 0.0, 0.0, 0.0);
 
-		spheres[18][0] = vec4(-34.0, -36.0, -3.0, 2.0);
-		spheres[18][1] = vec4(1.0, 1.0, 1.0, 1.0);
+	spheres[18][0] = vec4(-34.0, -36.0, -3.0, 2.0);
+	spheres[18][1] = vec4(1.0, 1.0, 1.0, 1.0);
 
-		spheres[19][0] = vec4(-26.5, -36.7, -4.275, 0.6);
-		spheres[19][1] = vec4(0.4, 1.0, 0.45, -2.5);
+	spheres[19][0] = vec4(-26.5, -36.7, -4.275, 0.6);
+	spheres[19][1] = vec4(0.4, 1.0, 0.45, -2.5);
 
-		spheres[20][0] = vec4(-27.3, -31.0, -2.0, 1.0);
-		spheres[20][1] = vec4(1.0, 1.0, 1.0, 0.0);
-		spheres[20][2] = vec4(0.5, 0.0, 0.0, 0.0);
+	spheres[20][0] = vec4(-27.3, -31.0, -2.0, 1.0);
+	spheres[20][1] = vec4(1.0, 1.0, 1.0, 0.0);
+	spheres[20][2] = vec4(0.5, 0.0, 0.0, 0.0);
 
-		spheres[21][0] = vec4(-30.0, -29.0, -1.8, 0.8);
-		spheres[21][1] = vec4(1.0, 0.8, 0.85, 0.01);
+	spheres[21][0] = vec4(-30.0, -29.0, -1.8, 0.8);
+	spheres[21][1] = vec4(1.0, 0.8, 0.85, 0.01);
 
-		spheres[22][0] = vec4(-34.5, -30.0, -2.1, 1.1);
-		spheres[22][1] = vec4(1.0, 1.0, 1.0, 0.5);
-		spheres[22][2] = vec4(0.0, 0.2, 0.0, 0.0);
-
-
-
-		// Other objects (default - box)
-		// [0] - pos   (for capsule: first point)
-		// [1] - size, (for hex prism X = radius, Y = nothing, Z = height,
-		//              for torus X = size, Z = width,
-		//				for capsule X = radius)
-		// [2] - color
-		// [3] - materials, x - roughness, y - alpha, z - roundness,
-		//       if z = -1.0: ellipsoid,
-		//       if z = -2.0: hexagonal prism,
-		//       if z = -3.0: torus,
-		//		 if z = -4.0: capsule
-		// [4] - rotation (for capsule: second point)
+	spheres[22][0] = vec4(-34.5, -30.0, -2.1, 1.1);
+	spheres[22][1] = vec4(1.0, 1.0, 1.0, 0.5);
+	spheres[22][2] = vec4(0.0, 0.2, 0.0, 0.0);
 
 
-		objects2[0][0] = vec3(0.0, 3.0, 0.5001);
-		objects2[0][1] = vec3(1.0, 1.3, 1.5);
-		objects2[0][2] = vec3(0.1, 0.1, 1.0);
-		objects2[0][3] = vec3(0.3, 0.0, 0.0);
-		objects2[0][4] = vec3(0.0, 0.0, 0.1);
 
-		objects2[1][0] = vec3(8.0, -3.0, -0.01);
-		objects2[1][1] = vec3(1.0, 1.0, 1.0);
-		objects2[1][2] = vec3(0.6, 0.6, 0.6);
-		objects2[1][3] = vec3(0.7, 0.2, 0.0);
-		objects2[1][4] = vec3(0.0, 0.0, 0.2);
+	// Other objects (default - box)
+	// [0] - pos   (for capsule: first point)
+	// [1] - size, (for hex prism X = radius, Y = nothing, Z = height,
+	//              for torus X = size, Z = width,
+	//				for capsule X = radius)
+	// [2] - color
+	// [3] - materials, x - roughness, y - alpha, z - roundness,
+	//       if z = -1.0: ellipsoid,
+	//       if z = -2.0: hexagonal prism,
+	//       if z = -3.0: torus,
+	//		 if z = -4.0: capsule
+	// [4] - rotation (for capsule: second point)
 
-		objects2[3][0] = vec3(8.0, -3.0, -1.71);
-		objects2[3][1] = vec3(0.7, 0.7, 0.7);
-		objects2[3][2] = vec3(0.6, 0.6, 0.6);
-		objects2[3][3] = vec3(0.7, 0.2, 0.0);
-		objects2[3][4] = vec3(0.0, 0.0, 0.5);
 
-		objects2[4][0] = vec3(8.0, -3.0, -2.81);
-		objects2[4][1] = vec3(0.4, 0.4, 0.4);
-		objects2[4][2] = vec3(0.6, 0.6, 0.6);
-		objects2[4][3] = vec3(0.7, 0.2, 0.0);
-		objects2[4][4] = vec3(0.0, 0.0, 0.7);
+	objects2[0][0] = vec3(0.0, 3.0, 0.5001);
+	objects2[0][1] = vec3(1.0, 1.3, 1.5);
+	objects2[0][2] = vec3(0.1, 0.1, 1.0);
+	objects2[0][3] = vec3(0.3, 0.0, 0.0);
+	objects2[0][4] = vec3(0.0, 0.0, 0.1);
 
-		objects2[2][0] = vec3(0.0, 3.0, -1.3);
-		objects2[2][1] = vec3(0.4, 0.4, 0.1);
-		objects2[2][2] = vec3(0.008, 0.3, 0.008);
-		objects2[2][3] = vec3(-1.0, 0.0, 0.0);
+	objects2[1][0] = vec3(8.0, -3.0, -0.01);
+	objects2[1][1] = vec3(1.0, 1.0, 1.0);
+	objects2[1][2] = vec3(0.6, 0.6, 0.6);
+	objects2[1][3] = vec3(0.7, 0.2, 0.0);
+	objects2[1][4] = vec3(0.0, 0.0, 0.2);
 
-		objects2[5][0] = vec3(8.0, 17.0, -6.00);	
-		objects2[5][1] = vec3(2.0, 2.0, 0.15);
-		objects2[5][2] = vec3(0.006, 3.0, 0.006);
-		objects2[5][3] = vec3(-1.0, 0.0, 0.0);
-		objects2[5][4] = vec3(0.0, 0.6, 0.9);
-														
-		objects2[6][0] = vec3(21.0, 6.0, -6.00);			// puple light
-		objects2[6][1] = vec3(2.0, 2.0, 0.15);
-		objects2[6][2] = vec3(3.0, 0.006, 0.1);
-		objects2[6][3] = vec3(-1.0, 0.0, 0.0);
-		objects2[6][4] = vec3(0.0, -0.6, 0.9);
+	objects2[3][0] = vec3(8.0, -3.0, -1.71);
+	objects2[3][1] = vec3(0.7, 0.7, 0.7);
+	objects2[3][2] = vec3(0.6, 0.6, 0.6);
+	objects2[3][3] = vec3(0.7, 0.2, 0.0);
+	objects2[3][4] = vec3(0.0, 0.0, 0.5);
 
-		objects2[7][0] = vec3(30.0, 30.0, -1.8);			// green light
-		objects2[7][1] = vec3(2.0, 2.0, 2.0);
-		objects2[7][2] = vec3(1.0, 1.0, 1.0);
-		objects2[7][3] = vec3(0.005, 0.0, 0.0);
-		objects2[7][4] = vec3(0.7853981625, 0.0, 2.0);
+	objects2[4][0] = vec3(8.0, -3.0, -2.81);
+	objects2[4][1] = vec3(0.4, 0.4, 0.4);
+	objects2[4][2] = vec3(0.6, 0.6, 0.6);
+	objects2[4][3] = vec3(0.7, 0.2, 0.0);
+	objects2[4][4] = vec3(0.0, 0.0, 0.7);
 
-		objects2[8][0] = vec3(-38.0, -30.0, -5.0);
-		objects2[8][1] = vec3(1.0, 1.0, 0.0001);
-		objects2[8][2] = vec3(8.0, 8.0, 8.0);
-		objects2[8][3] = vec3(-1.0, 0.0, 0.0);
-		objects2[8][4] = vec3(0.0, 3.14159265 / 2.0, 0.0);
+	objects2[2][0] = vec3(0.0, 3.0, -1.3);
+	objects2[2][1] = vec3(0.4, 0.4, 0.1);
+	objects2[2][2] = vec3(0.008, 0.3, 0.008);
+	objects2[2][3] = vec3(-1.0, 0.0, 0.0);
+
+	objects2[5][0] = vec3(8.0, 17.0, -6.00);	
+	objects2[5][1] = vec3(2.0, 2.0, 0.15);
+	objects2[5][2] = vec3(0.006, 3.0, 0.006);
+	objects2[5][3] = vec3(-1.0, 0.0, 0.0);
+	objects2[5][4] = vec3(0.0, 0.6, 0.9);
+													
+	objects2[6][0] = vec3(21.0, 6.0, -6.00);			// puple light
+	objects2[6][1] = vec3(2.0, 2.0, 0.15);
+	objects2[6][2] = vec3(3.0, 0.006, 0.1);
+	objects2[6][3] = vec3(-1.0, 0.0, 0.0);
+	objects2[6][4] = vec3(0.0, -0.6, 0.9);
+
+	objects2[7][0] = vec3(30.0, 30.0, -1.8);			// green light
+	objects2[7][1] = vec3(2.0, 2.0, 2.0);
+	objects2[7][2] = vec3(1.0, 1.0, 1.0);
+	objects2[7][3] = vec3(0.005, 0.0, 0.0);
+	objects2[7][4] = vec3(0.7853981625, 0.0, 2.0);
+
+	objects2[8][0] = vec3(-38.0, -30.0, -5.0);
+	objects2[8][1] = vec3(1.0, 1.0, 0.0001);
+	objects2[8][2] = vec3(8.0, 8.0, 8.0);
+	objects2[8][3] = vec3(-1.0, 0.0, 0.0);
+	objects2[8][4] = vec3(0.0, 3.14159265 / 2.0, 0.0);
 
 														// cornell box
-		objects2[9][0] = vec3(-30.0, -30.0, 0.0);			// floor	
-		objects2[9][1] = vec3(8.0, 8.0, 1.0);
-		objects2[9][2] = vec3(1.0, 1.0, 1.0);
-		objects2[9][3] = vec3(0.0000001, 0.0, 0.0);
+	objects2[9][0] = vec3(-30.0, -30.0, 0.0);				// floor	
+	objects2[9][1] = vec3(8.0, 8.0, 1.0);
+	objects2[9][2] = vec3(1.0, 1.0, 1.0);
+	objects2[9][3] = vec3(0.0000001, 0.0, 0.0);
 
-		objects2[10][0] = vec3(-38.0, -30.0, -1.0);			// walls
-		objects2[10][1] = vec3(0.0, 8.0, 8.0);
-		objects2[10][2] = vec3(1.0, 0.87, 0.45);
-		objects2[10][3] = vec3(0.0000001, 0.0, 0.0);
+	objects2[10][0] = vec3(-38.0, -30.0, -1.0);				// walls
+	objects2[10][1] = vec3(0.0, 8.0, 8.0);
+	objects2[10][2] = vec3(1.0, 0.87, 0.45);
+	objects2[10][3] = vec3(0.0000001, 0.0, 0.0);
 
-		objects2[11][0] = vec3(-22.0, -30.0, -1.0);
-		objects2[11][1] = vec3(0.0, 8.0, 8.0);
-		objects2[11][2] = vec3(0.4, 0.6, 1.0);
-		objects2[11][3] = vec3(0.0000001, 0.0, 0.0);
+	objects2[11][0] = vec3(-22.0, -30.0, -1.0);
+	objects2[11][1] = vec3(0.0, 8.0, 8.0);
+	objects2[11][2] = vec3(0.4, 0.6, 1.0);
+	objects2[11][3] = vec3(0.0000001, 0.0, 0.0);
 
-		objects2[12][0] = vec3(-30.0, -38.0, -1.0);
-		objects2[12][1] = vec3(8.0, 0.0, 8.0);
-		objects2[12][2] = vec3(1.0, 1.0, 1.0);
-		objects2[12][3] = vec3(0.0000001, 0.0, 0.0);
+	objects2[12][0] = vec3(-30.0, -38.0, -1.0);
+	objects2[12][1] = vec3(8.0, 0.0, 8.0);
+	objects2[12][2] = vec3(1.0, 1.0, 1.0);
+	objects2[12][3] = vec3(0.0000001, 0.0, 0.0);
 
-		objects2[13][0] = vec3(-30.0, -22.0, -1.0);
-		objects2[13][1] = vec3(8.0, 0.0, 8.0);
-		objects2[13][2] = vec3(1.0, 1.0, 1.0);
-		objects2[13][3] = vec3(0.0000001, 0.0, 0.0);		// end (walls)
-															
-		objects2[14][0] = vec3(-30.0, -30.0, -9.0);			// top
-		objects2[14][1] = vec3(8.0, 8.0, 0.0);
-		objects2[14][2] = vec3(1.0, 1.0, 1.0);
-		objects2[14][3] = vec3(0.0000001, 0.0, 0.0);
+	objects2[13][0] = vec3(-30.0, -22.0, -1.0);
+	objects2[13][1] = vec3(8.0, 0.0, 8.0);
+	objects2[13][2] = vec3(1.0, 1.0, 1.0);
+	objects2[13][3] = vec3(0.0000001, 0.0, 0.0);			// end (walls)
+														
+	objects2[14][0] = vec3(-30.0, -30.0, -9.0);				// top
+	objects2[14][1] = vec3(8.0, 8.0, 0.0);
+	objects2[14][2] = vec3(1.0, 1.0, 1.0);
+	objects2[14][3] = vec3(0.0000001, 0.0, 0.0);
 
-		objects2[15][0] = vec3(-26.5, -36.7, -1.9);			// cube in box
-		objects2[15][1] = vec3(1.3, 1.3, 1.75);
-		objects2[15][2] = vec3(1.0, 1.0, 1.0);
-		objects2[15][3] = vec3(0.0000001, 0.0, 0.0);
+	objects2[15][0] = vec3(-26.5, -36.7, -1.9);				// cube in box
+	objects2[15][1] = vec3(1.3, 1.3, 1.75);
+	objects2[15][2] = vec3(1.0, 1.0, 1.0);
+	objects2[15][3] = vec3(0.0000001, 0.0, 0.0);
 														// end (cornell box)
 
-		objects2[16][0] = vec3(-30.0, 30.0, -1.8);		// rounded boxes
-		objects2[16][1] = vec3(2.0, 2.0, 2.0);
-		objects2[16][2] = vec3(1.0, 1.0, 1.0);
-		objects2[16][3] = vec3(0.005, 0.0, 0.5);
-		objects2[16][4] = vec3(0.7853981625, 0.0, 2.0);
+	objects2[16][0] = vec3(-30.0, 30.0, -1.8);			// rounded boxes
+	objects2[16][1] = vec3(2.0, 2.0, 2.0);
+	objects2[16][2] = vec3(1.0, 1.0, 1.0);
+	objects2[16][3] = vec3(0.005, 0.0, 0.5);
+	objects2[16][4] = vec3(0.7853981625, 0.0, 2.0);
 
-		objects2[17][0] = vec3(-32.7, 24.0, -0.8);
-		objects2[17][1] = vec3(1.0, 1.0, 1.0);
-		objects2[17][2] = vec3(1.0, 1.0, 1.0);
-		objects2[17][3] = vec3(0.8, 0.3, 0.5);
-		objects2[17][4] = vec3(0.7853981625, 0.0, 2.0);	// end (rounded boxes)
+	objects2[17][0] = vec3(-32.7, 24.0, -0.8);
+	objects2[17][1] = vec3(1.0, 1.0, 1.0);
+	objects2[17][2] = vec3(1.0, 1.0, 1.0);
+	objects2[17][3] = vec3(0.8, 0.3, 0.5);
+	objects2[17][4] = vec3(0.7853981625, 0.0, 2.0);		// end (rounded boxes)
 
-		objects2[18][0] = vec3(-34.0, 18.0, 0.0);
-		objects2[18][1] = vec3(1.0, 1.0, 1.0);
-		objects2[18][2] = vec3(3.0, 3.0, 3.0);
-		objects2[18][3] = vec3(-1.0, 0.0, 0.0);
+	objects2[18][0] = vec3(-34.0, 18.0, 0.0);
+	objects2[18][1] = vec3(1.0, 1.0, 1.0);
+	objects2[18][2] = vec3(3.0, 3.0, 3.0);
+	objects2[18][3] = vec3(-1.0, 0.0, 0.0);
 
-		objects2[19][0] = vec3(-34.0, 0.0, -2.0);			// test ellipsoid
-		objects2[19][1] = vec3(2.0, 3.5, 1.7);
-		objects2[19][2] = vec3(0.5, 0.5, 0.5);
-		objects2[19][3] = vec3(1.0, 0.0, -1.0);
-		objects2[19][4] = vec3(0.7853981625, 0.0, 2.0);
+	objects2[19][0] = vec3(-34.0, 0.0, -2.0);			// test ellipsoid
+	objects2[19][1] = vec3(2.0, 3.5, 1.7);
+	objects2[19][2] = vec3(0.5, 0.5, 0.5);
+	objects2[19][3] = vec3(1.0, 0.0, -1.0);
+	objects2[19][4] = vec3(0.7853981625, 0.0, 2.0);
 
-		objects2[20][0] = vec3(-34.0, 10.0, -2.0);			// test ellipsoid
-		objects2[20][1] = vec3(2.0, 3.0, 2.0);
-		objects2[20][2] = vec3(0.5, 0.5, 0.5);
-		objects2[20][3] = vec3(0.8, 0.0, -1.0);
+	objects2[20][0] = vec3(-34.0, 10.0, -2.0);			// test ellipsoid
+	objects2[20][1] = vec3(2.0, 3.0, 2.0);
+	objects2[20][2] = vec3(0.5, 0.5, 0.5);
+	objects2[20][3] = vec3(0.8, 0.0, -1.0);
 
-		objects2[21][0] = vec3(-34.0, -10.0, -19.0);		// test hex prism
-		objects2[21][1] = vec3(2.5, 0.0, 20.0);
-		objects2[21][2] = vec3(1.0, 1.0, 1.0);
-		objects2[21][3] = vec3(0.001, 0.0, -2.0);
-		objects2[21][4] = vec3(3.14159265 / 2.0, 0.0, 0.0);
+	objects2[21][0] = vec3(-34.0, -10.0, -19.0);		// test hex prism
+	objects2[21][1] = vec3(2.5, 0.0, 20.0);
+	objects2[21][2] = vec3(1.0, 1.0, 1.0);
+	objects2[21][3] = vec3(0.001, 0.0, -2.0);
+	objects2[21][4] = vec3(3.14159265 / 2.0, 0.0, 0.0);
 
-		objects2[22][0] = vec3(-20.0, 35.0, -1.3);			// test torus
-		objects2[22][1] = vec3(2.0, 0.0, 1.0);
-		objects2[22][2] = vec3(0.94, 0.9, 0.5);
-		objects2[22][3] = vec3(1.0, 0.0, -3.0);
-		objects2[22][4] = vec3(1.0, 0.0, 0.0);
+	objects2[22][0] = vec3(-20.0, 35.0, -1.3);			// test torus
+	objects2[22][1] = vec3(2.0, 0.0, 1.0);
+	objects2[22][2] = vec3(0.94, 0.9, 0.5);
+	objects2[22][3] = vec3(1.0, 0.0, -3.0);
+	objects2[22][4] = vec3(1.0, 0.0, 0.0);
 
-		objects2[23][0] = vec3(-12.0, 35.0, -1.3);			// test torus
-		objects2[23][1] = vec3(2.0, 0.0, 1.0);
-		objects2[23][2] = vec3(0.94, 0.9, 0.5);
-		objects2[23][3] = vec3(0.001, 0.0, -3.0);
-		objects2[23][4] = vec3(1.0, 0.0, 0.0);
+	objects2[23][0] = vec3(-12.0, 35.0, -1.3);			// test torus
+	objects2[23][1] = vec3(2.0, 0.0, 1.0);
+	objects2[23][2] = vec3(0.94, 0.9, 0.5);
+	objects2[23][3] = vec3(0.001, 0.0, -3.0);
+	objects2[23][4] = vec3(1.0, 0.0, 0.0);
 
-		objects2[24][0] = vec3(2.0, 35.0, -1.3);			// test capsule
-		objects2[24][1] = vec3(1.0, 0.0, 0.0);
-		objects2[24][2] = vec3(1.0, 0.2, 0.2);
-		objects2[24][3] = vec3(-2.5, 0.0, -4.0);
-		objects2[24][4] = vec3(-1.0, 35.0, -1.3);
+	objects2[24][0] = vec3(2.0, 35.0, -1.3);			// test capsule
+	objects2[24][1] = vec3(1.0, 0.0, 0.0);
+	objects2[24][2] = vec3(1.0, 0.2, 0.2);
+	objects2[24][3] = vec3(-2.5, 0.0, -4.0);
+	objects2[24][4] = vec3(-1.0, 35.0, -1.3);
 
 
 	
